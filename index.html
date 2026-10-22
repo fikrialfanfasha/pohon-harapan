@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pohon Cita-Cita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky-top:#2a1a52; --sky-mid:#8c3f6b; --sky-bot:#ffb347;
+    --trunk:#5a3a24; --trunk-dark:#432a1a;
+    --gold:#ffd93d; --coral:#ff6b6b; --teal:#4ecdc4; --lav:#a78bfa; --mint:#8fe388;
+    --card:#2b1b3d; --ink:#fff6e8;
+    --leaf-scale:0.78;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:'Poppins',sans-serif;
+    background:linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 55%,var(--sky-bot) 100%);
+    overflow:hidden; position:relative; color:var(--ink);
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  h1{font-family:'Fredoka',sans-serif;}
+
+  .sun{position:absolute; right:8%; top:8%; width:90px; height:90px; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #fff6c9, var(--gold) 60%, #ffb347 100%);
+    box-shadow:0 0 60px 10px rgba(255,217,61,.5); animation:glow 4s ease-in-out infinite;}
+  @keyframes glow{0%,100%{opacity:.9}50%{opacity:1}}
+  .bird{position:absolute; font-size:22px; animation:fly 18s linear infinite; opacity:.85;}
+  .bird.b2{animation-duration:24s; top:14%; font-size:18px;}
+
+  .scene{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;}
+
+  header.title{position:absolute; top:calc(8px + env(safe-area-inset-top,0px)); left:0; right:0; text-align:center; z-index:5; pointer-events:none;}
+  header.title h1{margin:0; font-size:clamp(18px,3vw,28px); font-weight:600; letter-spacing:.3px;
+    text-shadow:0 2px 12px rgba(0,0,0,.35);}
+  header.title p{margin:2px 0 0; font-size:11px; opacity:.85; font-weight:400;}
+
+  .ground{position:absolute; left:0; right:0; bottom:0; height:7%;
+    background:linear-gradient(180deg,#3a5a2f,#223d1c);
+    border-top:3px solid #4d7a3c;}
+  .ground::before{content:"🌸 🌼 🌿 🌸 🌻 🌿 🌼 🌸 🌻 🌿 🌸 🌼"; position:absolute; top:-14px; left:0; right:0; text-align:center; font-size:16px; letter-spacing:22px; opacity:.9;}
+
+  svg.tree{position:absolute; left:50%; bottom:6%; transform:translateX(-50%); width:min(100vw,2200px); height:94vh; overflow:visible;}
+
+  .canopy-wrap{position:absolute; left:50%; bottom:17%; transform:translateX(-50%); width:min(100vw,2400px); height:88vh; z-index:3;}
+
+  .leaf{
+    position:absolute; width:calc(190px * var(--leaf-scale)); height:calc(190px * var(--leaf-scale)); border-radius:50% 50% 50% 10%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;
+    color:#1c1226; text-align:center; padding:calc(16px * var(--leaf-scale));
+    box-shadow:0 4px 14px rgba(0,0,0,.32); border:2px solid rgba(255,255,255,.35);
+    line-height:1.2; overflow:hidden; z-index:1;
+    transform:scale(0) rotate(-8deg); transition:transform .18s ease;
+  }
+  .leaf:hover{transform:scale(1.08); z-index:4;}
+  .leaf.show{animation:pop .5s cubic-bezier(.34,1.56,.64,1) forwards;}
+  @keyframes pop{0%{transform:scale(0) rotate(-20deg);} 70%{transform:scale(1.1) rotate(6deg);} 100%{transform:scale(1) rotate(0deg);}}
+  .leaf .lname{display:block; font-size:calc(20px * var(--leaf-scale)); font-weight:600; margin-bottom:calc(5px * var(--leaf-scale)); opacity:.8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%;}
+  .leaf .lwish{display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; font-size:calc(28px * var(--leaf-scale)); font-weight:700;}
+  .leaf.empty{background:rgba(255,255,255,.14) !important; border:2px dashed rgba(255,255,255,.5); color:var(--ink);}
+  .leaf.empty .plus{font-size:calc(32px * var(--leaf-scale)); opacity:.9; line-height:1;}
+  .leaf.empty .hint{font-size:calc(11px * var(--leaf-scale)); opacity:.65; margin-top:2px;}
+
+  .fsbtn{position:fixed; top:calc(16px + env(safe-area-inset-top,0px)); right:16px; z-index:10;
+    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.3); color:var(--ink);
+    width:42px; height:42px; border-radius:50%; cursor:pointer; font-size:18px;}
+
+  .counter{position:fixed; top:calc(16px + env(safe-area-inset-top,0px)); left:16px; z-index:10;
+    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.3); color:var(--ink);
+    padding:8px 16px; border-radius:999px; font-size:13px; font-weight:600;}
+
+  .overlay{position:fixed; inset:0; background:rgba(15,8,28,.7); backdrop-filter:blur(3px);
+    display:flex; align-items:center; justify-content:center; z-index:20; opacity:0; pointer-events:none; transition:opacity .2s;}
+  .overlay.open{opacity:1; pointer-events:auto;}
+  .modal{background:var(--card); border-radius:22px; padding:26px 24px; width:min(92vw,420px);
+    box-shadow:0 20px 50px rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.1); position:relative;}
+  .modal .dot{width:34px; height:34px; border-radius:50% 50% 50% 10%; margin-bottom:10px;}
+  .modal h2{font-family:'Fredoka',sans-serif; margin:0 0 4px; font-size:21px;}
+  .modal p.sub{margin:0 0 18px; font-size:13px; opacity:.7;}
+  .modal label{font-size:12px; opacity:.8; display:block; margin:14px 0 6px;}
+  .modal input, .modal textarea{
+    width:100%; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.18);
+    color:var(--ink); border-radius:12px; padding:11px 13px; font-family:'Poppins',sans-serif;
+    font-size:14px; resize:none;
+  }
+  .modal input:focus, .modal textarea:focus{outline:2px solid var(--gold); border-color:transparent;}
+  .modal-actions{display:flex; gap:10px; margin-top:22px;}
+  .btn{flex:1; border:none; border-radius:12px; padding:12px; font-weight:600; cursor:pointer; font-family:'Fredoka',sans-serif; font-size:15px;}
+  .btn.primary{background:linear-gradient(135deg,var(--coral),var(--gold)); color:#2b1b3d;}
+  .btn.ghost{background:transparent; color:var(--ink); border:1px solid rgba(255,255,255,.25);}
+
+  .card-popover{position:fixed; inset:0; background:rgba(15,8,28,.75); display:flex; align-items:center; justify-content:center; z-index:25; opacity:0; pointer-events:none; transition:opacity .2s;}
+  .card-popover.open{opacity:1; pointer-events:auto;}
+  .wishcard{background:var(--card); border-radius:20px; padding:26px; width:min(88vw,380px); text-align:center; position:relative;
+    border-top:6px solid var(--gold);}
+  .wishcard .name{font-family:'Fredoka',sans-serif; font-size:19px; margin:0 0 10px;}
+  .wishcard .wish{font-size:15px; line-height:1.5; opacity:.92;}
+  .wishcard .close{position:absolute; top:10px; right:14px; background:none; border:none; color:var(--ink); font-size:20px; cursor:pointer; opacity:.6;}
+  .wishcard .del{margin-top:18px; font-size:12px; opacity:.5; background:none; border:none; color:var(--ink); cursor:pointer; text-decoration:underline;}
+
+  @keyframes fly{0%{left:-5%; top:20%;} 50%{top:12%;} 100%{left:105%; top:22%;}}
+
+  @media (max-width:640px){
+    svg.tree{width:98vw; height:80vh;}
+    .canopy-wrap{width:99vw; height:62vh; bottom:24%;}
+    .leaf{width:calc(132px * var(--leaf-scale)); height:calc(132px * var(--leaf-scale)); padding:calc(12px * var(--leaf-scale));}
+    .leaf .lname{font-size:calc(16px * var(--leaf-scale)); margin-bottom:calc(4px * var(--leaf-scale));}
+    .leaf .lwish{font-size:calc(21px * var(--leaf-scale));}
+  }
+</style>
+</head>
+<body>
+
+<div class="sun"></div>
+<div class="bird">🕊️</div>
+<div class="bird b2">🕊️</div>
+
+<header class="title">
+  <h1>🌳 Pohon Cita-Cita</h1>
+  <p>Klik daun kosong, lalu tuliskan nama dan cita-citamu di sana</p>
+</header>
+
+<div class="counter" id="counter">0 / 36 terisi</div>
+<button class="fsbtn" id="fsBtn" title="Fullscreen">⛶</button>
+
+<div class="scene">
+  <svg class="tree" viewBox="0 0 400 600" preserveAspectRatio="xMidYMax meet">
+    <defs>
+      <linearGradient id="trunkGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#432a1a"/>
+        <stop offset="50%" stop-color="#6b4a2e"/>
+        <stop offset="100%" stop-color="#3a2416"/>
+      </linearGradient>
+    </defs>
+    <path d="M190 600 C175 510 168 460 182 420 C150 408 110 385 95 335 C130 348 160 355 180 368 C168 300 166 262 190 210
+             C218 262 212 300 204 368 C226 352 258 342 296 332 C278 385 244 408 208 420 C224 468 220 530 226 600 Z"
+          fill="url(#trunkGrad)" stroke="#2c1a0f" stroke-width="3"/>
+    <path d="M182 420 C152 378 122 310 136 250 C112 276 78 290 42 283 C70 312 92 332 120 343" fill="none" stroke="#5a3a24" stroke-width="17" stroke-linecap="round"/>
+    <path d="M208 420 C246 376 282 308 270 246 C298 266 334 268 364 255 C338 286 314 308 280 322" fill="none" stroke="#5a3a24" stroke-width="17" stroke-linecap="round"/>
+    <path d="M190 210 C182 158 196 118 190 78" fill="none" stroke="#5a3a24" stroke-width="15" stroke-linecap="round"/>
+  </svg>
+
+  <div class="canopy-wrap" id="canopy"></div>
+  <div class="ground"></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="dot" id="modalDot"></div>
+    <h2>Gantungkan Cita-Citamu</h2>
+    <p class="sub">Isi namamu dan impian yang ingin kamu raih</p>
+    <label for="nameInput">Nama</label>
+    <input id="nameInput" type="text" maxlength="24" placeholder="Nama kamu">
+    <label for="wishInput">Cita-cita</label>
+    <textarea id="wishInput" rows="3" maxlength="90" placeholder="Contoh: Menjadi software engineer di perusahaan teknologi"></textarea>
+    <div class="modal-actions">
+      <button class="btn ghost" id="cancelBtn">Batal</button>
+      <button class="btn primary" id="saveBtn">Gantungkan 🌿</button>
+    </div>
+  </div>
+</div>
+
+<div class="card-popover" id="popover">
+  <div class="wishcard">
+    <button class="close" id="closeCard">✕</button>
+    <div class="name" id="cardName"></div>
+    <div class="wish" id="cardWish"></div>
+    <button class="del" id="delBtn">Kosongkan daun ini</button>
+  </div>
+</div>
+
+<script>
+const COLORS = ['#ffd93d','#ff6b6b','#4ecdc4','#a78bfa','#8fe388','#ff9f6b'];
+const SLOT_COUNT = 36;
+const KEY = 'pohon-citacita-slots-v2';
+
+function colorFor(i){ return COLORS[(i*5 + 1) % COLORS.length]; }
+
+function loadSlots(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(KEY));
+    if(Array.isArray(saved) && saved.length === SLOT_COUNT) return saved;
+  }catch(e){}
+  const fresh = [];
+  for(let i=0;i<SLOT_COUNT;i++){ fresh.push({ id:'s'+i, color: colorFor(i), name:'', wish:'' }); }
+  return fresh;
+}
+
+let slots = loadSlots();
+let targetId = null;
+let activeId = null;
+
+const canopy = document.getElementById('canopy');
+const counter = document.getElementById('counter');
+const overlay = document.getElementById('overlay');
+const popover = document.getElementById('popover');
+
+// row-based oval layout: guarantees leaves never overlap, however many are filled
+const ROWS = 6;
+const BASE_W = 190, BASE_H = 190;        // desktop base leaf size (px) before scale
+const BASE_W_M = 132, BASE_H_M = 132;    // mobile base leaf size (px) before scale
+let rowCounts = [], rowStarts = [], positions = [];
+
+function computeRows(){
+  const factors = [];
+  for(let r=0;r<ROWS;r++) factors.push(Math.sin(Math.PI*(r+0.5)/ROWS));
+  const total = factors.reduce((a,b)=>a+b,0);
+  let counts = factors.map(f=> Math.max(2, Math.round(f/total*SLOT_COUNT)));
+  let diff = SLOT_COUNT - counts.reduce((a,b)=>a+b,0);
+  let mid = Math.floor(ROWS/2);
+  while(diff!==0){
+    if(diff>0){ counts[mid]++; diff--; } else if(counts[mid]>2){ counts[mid]--; diff++; } else { mid=(mid+1)%ROWS; }
+  }
+  rowCounts = counts;
+  const maxFactor = Math.max(...factors);
+  positions = [];
+  rowStarts = [];
+  let idx = 0;
+  const topM = 6, botM = 92;
+  for(let r=0;r<ROWS;r++){
+    rowStarts.push(idx);
+    const rowFactor = factors[r]/maxFactor;
+    const marginPct = (1-rowFactor)*36 + 4;
+    const usable = 100 - 2*marginPct;
+    const y = topM + (r+0.5)/ROWS * (botM-topM);
+    for(let j=0;j<rowCounts[r];j++){
+      const x = marginPct + (j+0.5)/rowCounts[r] * usable;
+      positions.push({ left:x, top:y, row:r });
+      idx++;
+    }
+  }
+}
+computeRows();
+
+function recomputeScale(){
+  const rect = canopy.getBoundingClientRect();
+  if(!rect.width || !rect.height) return;
+  const mobile = window.innerWidth <= 640;
+  const baseW = mobile ? BASE_W_M : BASE_W, baseH = mobile ? BASE_H_M : BASE_H;
+  const cellH = rect.height / ROWS;
+  let minCellW = Infinity;
+  rowCounts.forEach(c=>{ minCellW = Math.min(minCellW, rect.width*0.96/c); });
+  const scale = Math.min(2.2, (cellH*0.95)/baseH, (minCellW*0.95)/baseW);
+  const safeScale = Math.max(0.4, scale); // 0.4 is just a sane floor, never overrides the overlap-safe math above unless the window is extremely small
+  document.documentElement.style.setProperty('--leaf-scale', safeScale.toFixed(3));
+}
+
+function slotFor(index){ return positions[index] || {left:50, top:50}; }
+
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+function render(){
+  recomputeScale();
+  canopy.innerHTML = '';
+  let filled = 0;
+  slots.forEach((w,i)=>{
+    const pos = slotFor(i);
+    const el = document.createElement('div');
+    el.style.left = pos.left+'%';
+    el.style.top = pos.top+'%';
+    if(w.name && w.wish){
+      filled++;
+      el.className = 'leaf';
+      el.style.background = w.color;
+      el.innerHTML = '<span class="lname">'+escapeHtml(w.name)+'</span><span class="lwish">'+escapeHtml(w.wish)+'</span>';
+      el.onclick = ()=> openCard(w.id);
+    } else {
+      el.className = 'leaf empty';
+      el.innerHTML = '<span class="plus">+</span><span class="hint">klik untuk isi</span>';
+      el.onclick = ()=> openModal(w.id, w.color);
+    }
+    canopy.appendChild(el);
+    requestAnimationFrame(()=> el.classList.add('show'));
+  });
+  counter.textContent = filled + ' / ' + SLOT_COUNT + ' terisi';
+}
+
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(slots)); }catch(e){} }
+
+function openModal(id, color){
+  targetId = id;
+  document.getElementById('nameInput').value='';
+  document.getElementById('wishInput').value='';
+  document.getElementById('modalDot').style.background = color;
+  overlay.classList.add('open');
+  setTimeout(()=>document.getElementById('nameInput').focus(),150);
+}
+document.getElementById('cancelBtn').onclick = ()=> overlay.classList.remove('open');
+overlay.onclick = (e)=>{ if(e.target===overlay) overlay.classList.remove('open'); };
+document.getElementById('saveBtn').onclick = ()=>{
+  const name = document.getElementById('nameInput').value.trim();
+  const wish = document.getElementById('wishInput').value.trim();
+  if(!name || !wish || !targetId) return;
+  const slot = slots.find(s=>s.id===targetId);
+  if(!slot) return;
+  slot.name = name; slot.wish = wish;
+  save(); render(); overlay.classList.remove('open');
+};
+
+function openCard(id){
+  const w = slots.find(x=>x.id===id);
+  if(!w) return;
+  activeId = id;
+  document.getElementById('cardName').textContent = w.name;
+  document.getElementById('cardWish').textContent = w.wish;
+  popover.classList.add('open');
+}
+document.getElementById('closeCard').onclick = ()=> popover.classList.remove('open');
+popover.onclick = (e)=>{ if(e.target===popover) popover.classList.remove('open'); };
+document.getElementById('delBtn').onclick = ()=>{
+  const slot = slots.find(s=>s.id===activeId);
+  if(slot){ slot.name=''; slot.wish=''; }
+  save(); render(); popover.classList.remove('open');
+};
+
+document.getElementById('fsBtn').onclick = ()=>{
+  if(!document.fullscreenElement){ document.documentElement.requestFullscreen().catch(()=>{}); }
+  else{ document.exitFullscreen(); }
+};
+
+render();
+let resizeT;
+window.addEventListener('resize', ()=>{ clearTimeout(resizeT); resizeT=setTimeout(render,150); });
+</script>
+</body>
+</html>
